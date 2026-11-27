@@ -1,0 +1,14 @@
+HealthBridge Disease Prediction System – 5 Minute Demo
+
+Demo Video:
+https://1drv.ms/v/c/708b0a272b995dee/IQADNnsQq23HTrUS2OE3uxW6AboH6YILkv8XdjkqNxIKnf0?e=dqKM3B
+
+Duration: 5 minutes
+
+The video demonstrates:
+1. Streamlit application interface
+2. Patient symptom input
+3. Disease prediction with top-3 results
+4. SHAP explainability
+5. FastAPI Swagger documentation
+6. API prediction endpoint
