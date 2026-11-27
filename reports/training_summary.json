@@ -1,0 +1,84 @@
+{
+  "LogisticRegression": {
+    "validation": {
+      "accuracy": 0.5666666666666667,
+      "macro_precision": 0.566338422138328,
+      "macro_recall": 0.5666666666666665,
+      "macro_f1": 0.5591258077226958
+    },
+    "test": {
+      "accuracy": 0.4888888888888889,
+      "macro_precision": 0.4868539521480698,
+      "macro_recall": 0.4888888888888889,
+      "macro_f1": 0.4800304740571703,
+      "top_3_accuracy": 0.7911111111111111,
+      "roc_auc_ovr_macro": 0.9468505747126437
+    }
+  },
+  "RandomForest": {
+    "validation": {
+      "accuracy": 0.5,
+      "macro_precision": 0.5040678891971461,
+      "macro_recall": 0.5,
+      "macro_f1": 0.48952790869385177
+    },
+    "test": {
+      "accuracy": 0.49777777777777776,
+      "macro_precision": 0.48569098055940163,
+      "macro_recall": 0.4977777777777777,
+      "macro_f1": 0.48209322478524963,
+      "top_3_accuracy": 0.7533333333333333,
+      "roc_auc_ovr_macro": 0.9319693486590039
+    }
+  },
+  "XGBoost": {
+    "validation": {
+      "accuracy": 0.5066666666666667,
+      "macro_precision": 0.5107011752437448,
+      "macro_recall": 0.5066666666666666,
+      "macro_f1": 0.5024882626451254
+    },
+    "test": {
+      "accuracy": 0.4777777777777778,
+      "macro_precision": 0.47245402585404606,
+      "macro_recall": 0.4777777777777777,
+      "macro_f1": 0.4701227342604974,
+      "top_3_accuracy": 0.76,
+      "roc_auc_ovr_macro": 0.9278212005108556
+    }
+  },
+  "best_model": "LogisticRegression",
+  "n_classes": 30,
+  "classes": [
+    "Anaemia",
+    "Appendicitis",
+    "Arthritis",
+    "Asthma",
+    "COPD",
+    "ChickenPox",
+    "Dengue",
+    "Gastroenteritis",
+    "Healthy",
+    "HeartDisease",
+    "Hypertension",
+    "Hyperthyroidism",
+    "Hypothyroidism",
+    "Influenza",
+    "IrritableBowelSyndrome",
+    "Jaundice",
+    "KidneyDisease",
+    "LiverDisease",
+    "Malaria",
+    "Migraine",
+    "Osteoporosis",
+    "PepticUlcer",
+    "Pneumonia",
+    "Psoriasis",
+    "Sinusitis",
+    "Stroke",
+    "Tuberculosis",
+    "Type2Diabetes",
+    "Typhoid",
+    "Urinary_Tract_Infection"
+  ]
+}

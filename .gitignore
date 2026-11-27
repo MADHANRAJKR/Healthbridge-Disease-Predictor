@@ -14,9 +14,27 @@ env/
 # VS Code
 .vscode/
 
-# Model files
+# Model files — regenerate with: python src/train.py
 *.pkl
 *.joblib
+models/
+
+# MLflow experiment tracking — regenerate with: python src/train.py
+mlruns/
+
+# Generated processed data — regenerate with: python src/data_pipeline.py
+data/processed/
+
+# Generated SHAP plots — regenerate with: python src/explain.py
+# Keep SHAP explanation images in GitHub
+!reports/shap/
+!reports/shap/*.png
+
+# Test & build cache
+.pytest_cache/
+dist/
+build/
+*.egg-info/
 
 # Logs
 *.log
@@ -27,3 +45,8 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+# Local experiment files
+mlflow.db
+mlruns/
+__pycache__/
+.pytest_cache/
