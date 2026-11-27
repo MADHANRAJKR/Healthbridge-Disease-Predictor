@@ -1,5 +1,21 @@
 {
-  "LogisticRegression": {
+  "LogisticRegression_C0.1": {
+    "validation": {
+      "accuracy": 0.5266666666666666,
+      "macro_precision": 0.5151440670612498,
+      "macro_recall": 0.5266666666666666,
+      "macro_f1": 0.5119757105037543
+    },
+    "test": {
+      "accuracy": 0.4777777777777778,
+      "macro_precision": 0.4688923407211535,
+      "macro_recall": 0.4777777777777778,
+      "macro_f1": 0.46645657895717996,
+      "top_3_accuracy": 0.7755555555555556,
+      "roc_auc_ovr_macro": 0.9429527458492976
+    }
+  },
+  "LogisticRegression_C1.0": {
     "validation": {
       "accuracy": 0.5666666666666667,
       "macro_precision": 0.566338422138328,
@@ -13,6 +29,22 @@
       "macro_f1": 0.4800304740571703,
       "top_3_accuracy": 0.7911111111111111,
       "roc_auc_ovr_macro": 0.9468505747126437
+    }
+  },
+  "LogisticRegression_C10.0": {
+    "validation": {
+      "accuracy": 0.5733333333333334,
+      "macro_precision": 0.5724559602191183,
+      "macro_recall": 0.5733333333333335,
+      "macro_f1": 0.5634099754027669
+    },
+    "test": {
+      "accuracy": 0.4911111111111111,
+      "macro_precision": 0.4845229889076638,
+      "macro_recall": 0.4911111111111111,
+      "macro_f1": 0.4812496356781946,
+      "top_3_accuracy": 0.7888888888888889,
+      "roc_auc_ovr_macro": 0.9473614303959131
     }
   },
   "RandomForest": {
@@ -47,7 +79,7 @@
       "roc_auc_ovr_macro": 0.9278212005108556
     }
   },
-  "best_model": "LogisticRegression",
+  "best_model": "LogisticRegression_C10.0",
   "n_classes": 30,
   "classes": [
     "Anaemia",

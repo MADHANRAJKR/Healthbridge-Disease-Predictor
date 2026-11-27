@@ -107,25 +107,55 @@ def main():
         X_tmp, y_tmp, test_size=0.50, random_state=42, stratify=y_tmp)
     print(f"  Train: {len(X_train)} | Val: {len(X_val)} | Test: {len(X_test)}")
 
-    preprocessor = build_preprocessor(X_train)
+   
 
+  
     CANDIDATES = {
-        "LogisticRegression": LogisticRegression(
-            max_iter=5000, random_state=42, C=1.0, solver="lbfgs",
-            multi_class="multinomial"
-        ),
-        "RandomForest": RandomForestClassifier(
-            n_estimators=300, max_depth=None, min_samples_leaf=2,
-            random_state=42, n_jobs=-1
-        ),
-        "XGBoost": XGBClassifier(
-            n_estimators=400, learning_rate=0.1, max_depth=6,
-            subsample=0.8, colsample_bytree=0.8,
-            use_label_encoder=False, eval_metric="mlogloss",
-            random_state=42, n_jobs=-1,
-            num_class=n_classes, objective="multi:softprob",
-        ),
-    }
+    # Primary model: Logistic Regression experiments
+    "LogisticRegression_C0.1": LogisticRegression(
+        max_iter=5000,
+        random_state=42,
+        C=0.1,
+        solver="lbfgs"
+    ),
+
+    "LogisticRegression_C1.0": LogisticRegression(
+        max_iter=5000,
+        random_state=42,
+        C=1.0,
+        solver="lbfgs"
+    ),
+
+    "LogisticRegression_C10.0": LogisticRegression(
+        max_iter=5000,
+        random_state=42,
+        C=10.0,
+        solver="lbfgs"
+    ),
+
+    # Additional model comparisons
+    "RandomForest": RandomForestClassifier(
+        n_estimators=300,
+        max_depth=None,
+        min_samples_leaf=2,
+        random_state=42,
+        n_jobs=-1
+    ),
+
+    "XGBoost": XGBClassifier(
+        n_estimators=400,
+        learning_rate=0.1,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        eval_metric="mlogloss",
+        random_state=42,
+        n_jobs=-1,
+        num_class=n_classes,
+        objective="multi:softprob"
+    ),
+}
+
 
     mlflow.set_experiment("healthbridge_disease_prediction")
     summary = {}
@@ -135,6 +165,10 @@ def main():
 
     for name, clf in CANDIDATES.items():
         print(f"\nTraining {name} …")
+
+        # Create a separate preprocessor for every experiment
+        preprocessor = build_preprocessor(X_train)
+
         pipe = Pipeline([
             ("pre", preprocessor),
             ("clf", clf),
@@ -150,7 +184,7 @@ def main():
             mlflow.log_metrics({f"test_{k}": v for k, v in test_metrics.items()})
             mlflow.sklearn.log_model(
     pipe,
-    artifact_path=name,
+    name=name.replace(".", "_"),
     skops_trusted_types=[
         "numpy.dtype",
         "sklearn.compose._column_transformer._RemainderColsList",
