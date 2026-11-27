@@ -280,31 +280,45 @@ Previously recorded test result: 39 passed, 0 failed. Tests should be rerun afte
 
 ## 10. Performance and Future Improvements
 
-A Locust load test was conducted with 50 concurrent users for 60 seconds.
+Locust load testing was conducted with 50 concurrent users for 60 seconds at a spawn rate of 10 users per second.
 
-| Metric | Result |
-|---|---:|
-| Concurrent users | 50 |
-| Total requests | 238 |
-| Failed requests | 0 |
-| Average response time | 10,205.25 ms |
-| Minimum response time | 7,030.63 ms |
-| Maximum response time | 16,700.74 ms |
-| Throughput | 4.15 requests/second |
+### 10.1 Before and After Optimization
 
-The API processed all requests successfully, but response latency requires optimization.
+| Metric | Before Optimization | After Optimization |
+|---|---:|---:|
+| Concurrent users | 50 | 50 |
+| Total requests | 238 | 363 |
+| Failed requests | 0 | 0 |
+| Average response time | 10,205.25 ms | 6,642.03 ms |
+| Median response time | 10,000 ms | 6,700 ms |
+| Minimum response time | 7,030.63 ms | 3,403.60 ms |
+| Maximum response time | 16,700.74 ms | 10,459.24 ms |
+| Throughput | 4.15 req/s | 6.33 req/s |
 
-Planned improvements:
+### 10.2 Optimization Results
 
-- Optimize SHAP explainer initialization and reuse.
-- Reduce SHAP chart generation time.
-- Improve prediction processing.
-- Increase clinically validated training data.
+The following improvements were achieved:
+
+- Average response time reduced by approximately 34.9%.
+- Throughput increased by approximately 52.5%.
+- Total successful requests increased from 238 to 363.
+- No request failures were recorded in either test.
+
+The optimization focused on reusing the SHAP explainer and reducing SHAP chart generation overhead.
+
+Although performance improved, the average response time remains approximately 6.64 seconds. Further optimization is required before production deployment.
+
+### 10.3 Future Improvements
+
+- Further optimize SHAP explanation generation.
+- Improve prediction processing and API response time.
+- Increase the amount of clinically validated training data.
 - Improve model accuracy and generalization.
 - Conduct a complete demographic fairness audit.
-- Perform additional performance testing.
+- Perform additional load testing under different concurrency levels.
+- Evaluate deployment-level performance and scalability.
 
----
+
 
 ## 11. Project Conclusion
 
