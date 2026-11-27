@@ -142,56 +142,88 @@ def top_shap_features(sv, class_idx: int, feature_names: list[str], top_n: int =
     ]
 
 
-def waterfall_to_base64(pipe, le, row: pd.DataFrame, class_idx: int | None = None) -> str:
+
+def waterfall_to_base64(
+    pipe,
+    le,
+    row: pd.DataFrame,
+    class_idx: int | None = None,
+    sv=None,
+    explainer=None,
+) -> str:
     """
-    Generate a SHAP waterfall plot for the predicted class and return
-    it as a base64-encoded PNG string (for embedding in Streamlit / API).
+    Generate a SHAP feature-impact chart and return a base64 PNG.
+    Reuses precomputed SHAP values when supplied.
     """
     pre = pipe[:-1]
-    clf = pipe.named_steps["clf"]
     X_t = pre.transform(row)
 
-    explainer, _ = build_explainer(pipe)
-    sv = explainer(X_t)
+    # Calculate SHAP only when precomputed values are not supplied.
+    if sv is None:
+        if explainer is None:
+            explainer, _ = build_explainer(pipe)
+        sv = explainer(X_t)
 
-    pred_enc = pipe.predict(row)[0]
+    pred_enc = int(pipe.predict(row)[0])
+
     if class_idx is None:
-        class_idx = int(pred_enc)
+        class_idx = pred_enc
 
     fig, ax = plt.subplots(figsize=(9, 5))
 
-    # Build a simple bar chart as a robust fallback that always works
     if hasattr(sv, "values") and sv.values.ndim == 3:
         vals = sv.values[0, :, class_idx]
-        base = float(sv.base_values[0, class_idx]) if sv.base_values.ndim == 2 else float(sv.base_values[class_idx])
+        base = (
+            float(sv.base_values[0, class_idx])
+            if sv.base_values.ndim == 2
+            else float(sv.base_values[class_idx])
+        )
     elif hasattr(sv, "values") and sv.values.ndim == 2:
         vals = sv.values[0, :]
-        base = float(sv.base_values[0]) if hasattr(sv.base_values, "__len__") else float(sv.base_values)
+        base = (
+            float(sv.base_values[0])
+            if hasattr(sv.base_values, "__len__")
+            else float(sv.base_values)
+        )
     else:
         vals = np.array(sv.values).flatten()
         base = float(np.mean(sv.base_values)) if hasattr(sv, "base_values") else 0.0
 
     idx_sorted = np.argsort(np.abs(vals))[::-1][:10]
     feat_names = [FEATURE_COLS[i] for i in idx_sorted]
-    feat_vals  = vals[idx_sorted]
+    feat_vals = vals[idx_sorted]
 
     colors = ["#e74c3c" if v > 0 else "#3498db" for v in feat_vals]
-    ax.barh(range(len(feat_names)), feat_vals, color=colors, edgecolor="white", linewidth=0.5)
+
+    ax.barh(
+        range(len(feat_names)),
+        feat_vals,
+        color=colors,
+        edgecolor="white",
+        linewidth=0.5,
+    )
     ax.set_yticks(range(len(feat_names)))
     ax.set_yticklabels(feat_names, fontsize=10)
     ax.axvline(0, color="black", linewidth=0.8)
     ax.set_xlabel("SHAP value (impact on model output)", fontsize=10)
+
     pred_label = le.inverse_transform([pred_enc])[0]
-    ax.set_title(f"SHAP Feature Impact — Predicted: {pred_label}", fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"SHAP Feature Impact — Predicted: {pred_label}",
+        fontsize=12,
+        fontweight="bold",
+    )
     ax.set_facecolor("#f8f9fa")
     fig.patch.set_facecolor("#ffffff")
     plt.tight_layout()
 
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    fig.savefig(buf, format="png", dpi=100, bbox_inches="tight")
     plt.close(fig)
+
     buf.seek(0)
     return base64.b64encode(buf.read()).decode("utf-8")
+
 
 
 # ---------------------------------------------------------------------------

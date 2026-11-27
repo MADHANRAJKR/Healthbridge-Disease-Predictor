@@ -33,8 +33,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.schemas import SymptomInput, PredictionResponse, DiseaseProba, ShapFeature
 from explain import (
-    load_artifacts, top_shap_features, build_explainer,
-    waterfall_to_base64, FEATURE_COLS
+    load_artifacts,
+    top_shap_features,
+    build_explainer,
+    waterfall_to_base64,
+    FEATURE_COLS,
 )
 
 # ---------------------------------------------------------------------------
@@ -46,15 +49,25 @@ _state: dict[str, Any] = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Loading model artifacts …")
-    pipe, le = load_artifacts()
-    _state["pipe"] = pipe
-    _state["le"]   = le
-    _state["diseases"] = sorted(le.classes_.tolist())
-    print(f"  Loaded model: {type(pipe.named_steps['clf']).__name__}")
-    print(f"  Disease classes ({len(_state['diseases'])}): {_state['diseases'][:5]} …")
-    yield
-    _state.clear()
 
+    pipe, le = load_artifacts()
+
+    print("Building SHAP explainer …")
+    explainer, is_tree = build_explainer(pipe)
+
+    _state["pipe"] = pipe
+    _state["le"] = le
+    _state["explainer"] = explainer
+    _state["is_tree"] = is_tree
+    _state["diseases"] = sorted(le.classes_.tolist())
+
+    print(f"  Loaded model: {type(pipe.named_steps['clf']).__name__}")
+    print(f"  SHAP explainer ready")
+    print(f"  Disease classes ({len(_state['diseases'])}): {_state['diseases'][:5]} …")
+
+    yield
+
+    _state.clear()
 
 # ---------------------------------------------------------------------------
 app = FastAPI(
@@ -102,44 +115,57 @@ def list_diseases():
     }
 
 
+
 @app.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
 def predict(payload: SymptomInput):
     """
     Predict the most likely disease and return:
     - Top-3 predicted diseases with probabilities
-    - SHAP explanation (top-5 features + base64 waterfall chart)
+    - SHAP explanation (top-5 features + base64 chart)
     """
     pipe = _state.get("pipe")
-    le   = _state.get("le")
-    if pipe is None:
-        raise HTTPException(503, "Model not loaded")
+    le = _state.get("le")
+    explainer = _state.get("explainer")
 
-    # Build input DataFrame
+    if pipe is None or explainer is None:
+        raise HTTPException(503, "Model or SHAP explainer not loaded")
+
     row = pd.DataFrame([payload.model_dump()])
-    row = row[FEATURE_COLS]  # ensure column order
+    row = row[FEATURE_COLS]
 
     try:
-        proba      = pipe.predict_proba(row)[0]
-        pred_enc   = pipe.predict(row)[0]
+        proba = pipe.predict_proba(row)[0]
+        pred_enc = int(np.argmax(proba))
         pred_class = le.inverse_transform([pred_enc])[0]
         confidence = float(proba[pred_enc])
 
-        # Top-3
+        # Top-3 predictions
         top3_idx = np.argsort(proba)[::-1][:3]
-        top3     = [
-            DiseaseProba(disease=le.classes_[i], probability=float(proba[i]))
+        top3 = [
+            DiseaseProba(
+                disease=le.classes_[i],
+                probability=float(proba[i])
+            )
             for i in top3_idx
         ]
 
-        # SHAP
-        explainer, _ = build_explainer(pipe)
-        X_t          = pipe[:-1].transform(row)
-        sv           = explainer(X_t)
-        shap5        = top_shap_features(sv, int(pred_enc), FEATURE_COLS, top_n=5)
-        shap_top5    = [ShapFeature(**f) for f in shap5]
+        # Calculate SHAP values once
+        X_t = pipe[:-1].transform(row)
+        sv = explainer(X_t)
 
-        # Waterfall chart
-        chart_b64 = waterfall_to_base64(pipe, le, row)
+        shap5 = top_shap_features(
+            sv, pred_enc, FEATURE_COLS, top_n=5
+        )
+        shap_top5 = [ShapFeature(**f) for f in shap5]
+
+        # Reuse the same SHAP values for the chart
+        chart_b64 = waterfall_to_base64(
+            pipe,
+            le,
+            row,
+            class_idx=pred_enc,
+            sv=sv,
+        )
 
     except Exception as exc:
         raise HTTPException(500, f"Prediction error: {exc}") from exc
